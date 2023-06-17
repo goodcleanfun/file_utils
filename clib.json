@@ -1,0 +1,9 @@
+{
+  "name": "file_utils",
+  "version": "0.1.0",
+  "repo": "goodcleanfun/file_utils",
+  "description": "Simple endian-agnostic serialization to and from files",
+  "keywords": ["file", "serialization", "deserialization"],
+  "license": "MIT",
+  "src": ["src/file_utils.h", "src/file_utils.c"]
+}

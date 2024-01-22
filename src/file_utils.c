@@ -60,7 +60,7 @@ bool file_read_uint64(FILE *file, uint64_t *value) {
     return false;
 }
 
-bool file_read_uint64_array(FILE *file, uint64_t *value, size_t n) {
+bool file_read_uint64_vector(FILE *file, uint64_t *value, size_t n) {
     unsigned char *buf = malloc(n * sizeof(uint64_t));
 
     if (buf == NULL) return false;
@@ -79,19 +79,49 @@ bool file_read_uint64_array(FILE *file, uint64_t *value, size_t n) {
     return ret;
 }
 
+static inline void fill_buffer_uint64(uint8_t *buf, size_t buf_index, uint64_t value) {
+    buf[buf_index    ] = (uint8_t)(value >> 56);
+    buf[buf_index + 1] = (uint8_t)(value >> 48);
+    buf[buf_index + 2] = (uint8_t)(value >> 40);
+    buf[buf_index + 3] = (uint8_t)(value >> 32);
+    buf[buf_index + 4] = (uint8_t)(value >> 24);
+    buf[buf_index + 5] = (uint8_t)(value >> 16);
+    buf[buf_index + 6] = (uint8_t)(value >> 8);
+    buf[buf_index + 7] = (uint8_t)(value);
+}
 
 bool file_write_uint64(FILE *file, uint64_t value) {
-    unsigned char buf[8];
-    buf[0] = ((uint8_t)(value >> 56) & 0xff);
-    buf[1] = ((uint8_t)(value >> 48) & 0xff);
-    buf[2] = ((uint8_t)(value >> 40) & 0xff);
-    buf[3] = ((uint8_t)(value >> 32) & 0xff);
-    buf[4] = ((uint8_t)(value >> 24) & 0xff);
-    buf[5] = ((uint8_t)(value >> 16) & 0xff);
-    buf[6] = ((uint8_t)(value >> 8) & 0xff);
-    buf[7] = (uint8_t)(value & 0xff);
-
+    uint8_t buf[8];
+    fill_buffer_uint64(buf, 0, value);
     return (fwrite(buf, 8, 1, file) == 1);
+}
+
+bool file_write_uint64_vector(FILE *file, uint64_t *values, size_t n) {
+    uint8_t buf[BUFSIZ];
+    size_t buf_index = 0;
+
+    for (size_t i = 0; i < n; i++) {
+        if (buf_index + 8 > BUFSIZ) {
+            // Write the buffer to the file when it's full
+            if (fwrite(buf, 1, buf_index, file) != buf_index) {
+                return false;
+            }
+            buf_index = 0;
+        }
+
+        // Pack the uint64_t into the buffer
+        fill_buffer_uint64(buf, buf_index, values[i]);
+        buf_index += 8;
+    }
+
+    // Write any remaining data in the buffer to the file
+    if (buf_index > 0) {
+        if (fwrite(buf, 1, buf_index, file) != buf_index) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 typedef union {
@@ -108,7 +138,7 @@ bool file_read_double(FILE *file, double *value) {
     return true;
 }
 
-bool file_read_double_array(FILE *file, double *value, size_t n) {
+bool file_read_double_vector(FILE *file, double *value, size_t n) {
     unsigned char *buf = malloc(n * sizeof(uint64_t));
 
     if (buf == NULL) return false;
@@ -135,6 +165,34 @@ bool file_write_double(FILE *file, double value) {
     return file_write_uint64(file, ud.u);
 }
 
+bool file_write_double_vector(FILE *file, double *values, size_t n) {
+    uint8_t buf[BUFSIZ];
+    size_t buf_index = 0;
+    uint64_double_t ud;
+
+    for (size_t i = 0; i < n; i++) {
+        if (buf_index + 8 > BUFSIZ) {
+            // Write the buffer to the file when it's full
+            if (fwrite(buf, 1, buf_index, file) != buf_index) {
+                return false;
+            }
+            buf_index = 0;
+        }
+
+        // Pack the uint64_t into the buffer
+        ud.d = values[i];
+        uint64_t u = ud.u;
+        fill_buffer_uint64(buf, buf_index, u);
+        buf_index += 8;
+    }
+    if (buf_index > 0) {
+        if (fwrite(buf, 1, buf_index, file) != buf_index) {
+            return false;
+        }
+    }
+    return true;
+}
+
 typedef union {
     uint32_t u;
     float f;
@@ -150,7 +208,7 @@ bool file_read_float(FILE *file, float *value) {
     return true;
 }
 
-bool file_read_float_array(FILE *file, float *value, size_t n) {
+bool file_read_float_vector(FILE *file, float *value, size_t n) {
     unsigned char *buf = malloc(n * sizeof(uint32_t));
 
     if (buf == NULL) return false;
@@ -178,6 +236,15 @@ bool file_write_float(FILE *file, float value) {
 
 }
 
+bool file_write_float_vector(FILE *file, float *values, size_t n) {
+    for (size_t i = 0; i < n; i++) {
+        if (!file_write_float(file, values[i])) {
+            return false;
+        }
+    }
+    return true;
+}
+
 inline uint32_t file_deserialize_uint32(unsigned char *buf) {
     return ((uint32_t)buf[0] << 24) | ((uint32_t)buf[1] << 16) | ((uint32_t)buf[2] << 8) | (uint32_t)buf[3];
 }
@@ -192,7 +259,7 @@ bool file_read_uint32(FILE *file, uint32_t *value) {
     return false;
 }
 
-bool file_read_uint32_array(FILE *file, uint32_t *value, size_t n) {
+bool file_read_uint32_vector(FILE *file, uint32_t *value, size_t n) {
     unsigned char *buf = malloc(n * sizeof(uint32_t));
 
     if (buf == NULL) return false;
@@ -211,22 +278,51 @@ bool file_read_uint32_array(FILE *file, uint32_t *value, size_t n) {
     return ret;
 }
 
+void fill_buffer_uint32(uint8_t *buf, size_t buf_index, uint32_t value) {
+    buf[buf_index    ] = (uint8_t)(value >> 24);
+    buf[buf_index + 1] = (uint8_t)(value >> 16);
+    buf[buf_index + 2] = (uint8_t)(value >> 8);
+    buf[buf_index + 3] = (uint8_t)(value);
+}
+
 
 bool file_write_uint32(FILE *file, uint32_t value) {
-    unsigned char buf[4];
-    buf[0] = (value >> 24) & 0xff;
-    buf[1] = (value >> 16) & 0xff;
-    buf[2] = (value >> 8) & 0xff;
-    buf[3] = value & 0xff;
-
+    uint8_t buf[4];
+    fill_buffer_uint32(buf, 0, value);
     return (fwrite(buf, 4, 1, file) == 1);
 }
 
+bool file_write_uint32_vector(FILE *file, uint32_t *values, size_t n) {
+    uint8_t buf[BUFSIZ];
+    size_t buf_index = 0;
+
+    for (size_t i = 0; i < n; i++) {
+        if (buf_index + 4 > BUFSIZ) {
+            // Write the buffer to the file when it's full
+            if (fwrite(buf, 1, buf_index, file) != buf_index) {
+                return false;
+            }
+            buf_index = 0;
+        }
+
+        // Pack the uint32_t into the buffer
+        fill_buffer_uint32(buf, buf_index, values[i]);
+        buf_index += 4;
+    }
+
+    // Write any remaining data in the buffer to the file
+    if (buf_index > 0) {
+        if (fwrite(buf, 1, buf_index, file) != buf_index) {
+            return false;
+        }
+    }
+
+    return true;
+}
 
 inline uint16_t file_deserialize_uint16(unsigned char *buf) {
     return ((uint16_t)buf[0] << 8) | buf[1];
 }
-
 
 bool file_read_uint16(FILE *file, uint16_t *value) {
     unsigned char buf[2];
@@ -236,16 +332,45 @@ bool file_read_uint16(FILE *file, uint16_t *value) {
         return true;
     }
     return false;
+}
 
+static void fill_buffer_uint16(uint8_t *buf, size_t buf_index, uint16_t value) {
+    buf[buf_index    ] = (uint8_t)(value >> 8);
+    buf[buf_index + 1] = (uint8_t)(value);
 }
 
 bool file_write_uint16(FILE *file, uint16_t value) {
-    unsigned char buf[2];
-
-    buf[0] = value >> 8;
-    buf[1] = value & 0xff;
-
+    uint8_t buf[2];
+    fill_buffer_uint16(buf, 0, value);
     return (fwrite(buf, 2, 1, file) == 1);
+}
+
+bool file_write_uint16_vector(FILE *file, uint16_t *values, size_t n) {
+    uint8_t buf[BUFSIZ];
+    size_t buf_index = 0;
+
+    for (size_t i = 0; i < n; i++) {
+        if (buf_index + 2 > BUFSIZ) {
+            // Write the buffer to the file when it's full
+            if (fwrite(buf, 1, buf_index, file) != buf_index) {
+                return false;
+            }
+            buf_index = 0;
+        }
+
+        // Pack the uint16_t into the buffer
+        fill_buffer_uint16(buf, buf_index, values[i]);
+        buf_index += 2;
+    }
+
+    // Write any remaining data in the buffer to the file
+    if (buf_index > 0) {
+        if (fwrite(buf, 1, buf_index, file) != buf_index) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool file_read_uint8(FILE *file, uint8_t *value) {

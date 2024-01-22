@@ -5,5 +5,8 @@
   "description": "Simple endian-agnostic serialization to and from files",
   "keywords": ["file", "serialization", "deserialization"],
   "license": "MIT",
+  "development": {
+    "silentbicycle/greatest": "*"
+  },
   "src": ["src/file_utils.h", "src/file_utils.c"]
 }

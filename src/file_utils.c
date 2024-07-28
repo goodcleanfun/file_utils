@@ -12,7 +12,12 @@ char *file_getline(FILE * f)
     while (fgets(buf, BUFSIZ, f) != NULL) {
         buf_len = strlen(buf);
         if (buf_len == 0) break;
-        ret = realloc(ret, ret_size + buf_len + 1);
+        char *temp = realloc(ret, ret_size + buf_len + 1);
+        if (temp == NULL) {
+            free(ret);
+            return NULL;
+        }
+        ret = temp;
         memcpy(ret+ret_size, buf, buf_len);
         ret_size += buf_len;
         ret[ret_size] = '\0';
@@ -27,6 +32,8 @@ char *file_getline(FILE * f)
     }
 
     if (ret_size == 0) {
+        // should always be NULL in this case
+        free(ret);
         return NULL;
     } 
     return ret;

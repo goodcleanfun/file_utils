@@ -25,27 +25,27 @@ uint64_t file_deserialize_uint64(unsigned char *buf);
 bool file_read_uint64(FILE *file, uint64_t *value);
 bool file_write_uint64(FILE *file, uint64_t value);
 
-bool file_read_uint64_vector(FILE *file, uint64_t *value, size_t n);
-bool file_write_uint64_vector(FILE *file, uint64_t *values, size_t n);
+bool file_read_uint64_array(FILE *file, uint64_t *value, size_t n);
+bool file_write_uint64_array(FILE *file, uint64_t *values, size_t n);
 
 bool file_read_float(FILE *file, float *value);
 bool file_write_float(FILE *file, float value);
 
-bool file_read_float_vector(FILE *file, float *value, size_t n);
-bool file_write_float_vector(FILE *file, float *values, size_t n);
+bool file_read_float_array(FILE *file, float *value, size_t n);
+bool file_write_float_array(FILE *file, float *values, size_t n);
 
 bool file_read_double(FILE *file, double *value);
 bool file_write_double(FILE *file, double value);
 
-bool file_read_double_vector(FILE *file, double *value, size_t n);
-bool file_write_double_vector(FILE *file, double *values, size_t n);
+bool file_read_double_array(FILE *file, double *value, size_t n);
+bool file_write_double_array(FILE *file, double *values, size_t n);
 
 uint32_t file_deserialize_uint32(unsigned char *buf);
 bool file_read_uint32(FILE *file, uint32_t *value);
 bool file_write_uint32(FILE *file, uint32_t value);
 
-bool file_read_uint32_vector(FILE *file, uint32_t *value, size_t n);
-bool file_write_uint32_vector(FILE *file, uint32_t *values, size_t n);
+bool file_read_uint32_array(FILE *file, uint32_t *value, size_t n);
+bool file_write_uint32_array(FILE *file, uint32_t *values, size_t n);
 
 uint16_t file_deserialize_uint16(unsigned char *buf);
 bool file_read_uint16(FILE *file, uint16_t *value);

@@ -78,12 +78,12 @@ TEST test_file_utils(void) {
     f = fopen(filename, "w");
     double da[] = {1.0, 2.0, 3.0, 4.0, 5.0, DBL_MAX};
     size_t len_da = sizeof(da) / sizeof(double);
-    ASSERT(file_write_double_vector(f, da, len_da));
+    ASSERT(file_write_double_array(f, da, len_da));
     fclose(f);
 
     f = fopen(filename, "r");
     double *read_da = malloc(sizeof(double) * len_da);
-    ASSERT(file_read_double_vector(f, read_da, len_da));
+    ASSERT(file_read_double_array(f, read_da, len_da));
     for (size_t i = 0; i < len_da; i++) {
         ASSERT_EQ(read_da[i], da[i]);
     }
@@ -93,12 +93,12 @@ TEST test_file_utils(void) {
     f = fopen(filename, "w");
     float fa[] = {1.0, 2.0, 3.0, 4.0, 5.0, FLT_MAX};
     size_t len_fa = sizeof(fa) / sizeof(float);
-    ASSERT(file_write_float_vector(f, fa, len_fa));
+    ASSERT(file_write_float_array(f, fa, len_fa));
     fclose(f);
 
     f = fopen(filename, "r");
     float *read_fa = malloc(sizeof(float) * len_fa);
-    ASSERT(file_read_float_vector(f, read_fa, len_fa));
+    ASSERT(file_read_float_array(f, read_fa, len_fa));
     for (size_t i = 0; i < len_fa; i++) {
         ASSERT_EQ(read_fa[i], fa[i]);
     }
@@ -108,12 +108,12 @@ TEST test_file_utils(void) {
     f = fopen(filename, "w");
     uint32_t ia[] = {1, 2, 3, 4, 5, INT_MAX};
     size_t len_ia = sizeof(ia) / sizeof(int32_t);
-    ASSERT(file_write_uint32_vector(f, ia, len_ia));
+    ASSERT(file_write_uint32_array(f, ia, len_ia));
     fclose(f);
 
     f = fopen(filename, "r");
     uint32_t *read_ia = malloc(sizeof(uint32_t) * len_ia);
-    ASSERT(file_read_uint32_vector(f, read_ia, len_ia));
+    ASSERT(file_read_uint32_array(f, read_ia, len_ia));
     for (size_t i = 0; i < len_ia; i++) {
         ASSERT_EQ(read_ia[i], ia[i]);
     }
@@ -123,12 +123,12 @@ TEST test_file_utils(void) {
     f = fopen(filename, "w");
     uint64_t la[] = {1, 2, 3, 4, 5, ULLONG_MAX};
     size_t len_la = sizeof(la) / sizeof(uint64_t);
-    ASSERT(file_write_uint64_vector(f, la, len_la));
+    ASSERT(file_write_uint64_array(f, la, len_la));
     fclose(f);
 
     f = fopen(filename, "r");
     uint64_t *read_la = malloc(sizeof(uint64_t) * len_la);
-    ASSERT(file_read_uint64_vector(f, read_la, len_la));
+    ASSERT(file_read_uint64_array(f, read_la, len_la));
     for (size_t i = 0; i < len_la; i++) {
         ASSERT_EQ(read_la[i], la[i]);
     }

@@ -67,7 +67,7 @@ bool file_read_uint64(FILE *file, uint64_t *value) {
     return false;
 }
 
-bool file_read_uint64_vector(FILE *file, uint64_t *value, size_t n) {
+bool file_read_uint64_array(FILE *file, uint64_t *value, size_t n) {
     unsigned char *buf = malloc(n * sizeof(uint64_t));
 
     if (buf == NULL) return false;
@@ -103,7 +103,7 @@ bool file_write_uint64(FILE *file, uint64_t value) {
     return (fwrite(buf, 8, 1, file) == 1);
 }
 
-bool file_write_uint64_vector(FILE *file, uint64_t *values, size_t n) {
+bool file_write_uint64_array(FILE *file, uint64_t *values, size_t n) {
     uint8_t buf[BUFSIZ];
     size_t buf_index = 0;
 
@@ -145,7 +145,7 @@ bool file_read_double(FILE *file, double *value) {
     return true;
 }
 
-bool file_read_double_vector(FILE *file, double *value, size_t n) {
+bool file_read_double_array(FILE *file, double *value, size_t n) {
     unsigned char *buf = malloc(n * sizeof(uint64_t));
 
     if (buf == NULL) return false;
@@ -172,7 +172,7 @@ bool file_write_double(FILE *file, double value) {
     return file_write_uint64(file, ud.u);
 }
 
-bool file_write_double_vector(FILE *file, double *values, size_t n) {
+bool file_write_double_array(FILE *file, double *values, size_t n) {
     uint8_t buf[BUFSIZ];
     size_t buf_index = 0;
     uint64_double_t ud;
@@ -215,7 +215,7 @@ bool file_read_float(FILE *file, float *value) {
     return true;
 }
 
-bool file_read_float_vector(FILE *file, float *value, size_t n) {
+bool file_read_float_array(FILE *file, float *value, size_t n) {
     unsigned char *buf = malloc(n * sizeof(uint32_t));
 
     if (buf == NULL) return false;
@@ -243,7 +243,7 @@ bool file_write_float(FILE *file, float value) {
 
 }
 
-bool file_write_float_vector(FILE *file, float *values, size_t n) {
+bool file_write_float_array(FILE *file, float *values, size_t n) {
     for (size_t i = 0; i < n; i++) {
         if (!file_write_float(file, values[i])) {
             return false;
@@ -266,7 +266,7 @@ bool file_read_uint32(FILE *file, uint32_t *value) {
     return false;
 }
 
-bool file_read_uint32_vector(FILE *file, uint32_t *value, size_t n) {
+bool file_read_uint32_array(FILE *file, uint32_t *value, size_t n) {
     unsigned char *buf = malloc(n * sizeof(uint32_t));
 
     if (buf == NULL) return false;
@@ -299,7 +299,7 @@ bool file_write_uint32(FILE *file, uint32_t value) {
     return (fwrite(buf, 4, 1, file) == 1);
 }
 
-bool file_write_uint32_vector(FILE *file, uint32_t *values, size_t n) {
+bool file_write_uint32_array(FILE *file, uint32_t *values, size_t n) {
     uint8_t buf[BUFSIZ];
     size_t buf_index = 0;
 
@@ -352,7 +352,7 @@ bool file_write_uint16(FILE *file, uint16_t value) {
     return (fwrite(buf, 2, 1, file) == 1);
 }
 
-bool file_write_uint16_vector(FILE *file, uint16_t *values, size_t n) {
+bool file_write_uint16_array(FILE *file, uint16_t *values, size_t n) {
     uint8_t buf[BUFSIZ];
     size_t buf_index = 0;
 

@@ -1,6 +1,6 @@
 {
   "name": "file_utils",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "repo": "goodcleanfun/file_utils",
   "description": "Simple endian-agnostic serialization to and from files",
   "keywords": ["file", "serialization", "deserialization"],

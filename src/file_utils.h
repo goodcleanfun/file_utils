@@ -10,6 +10,8 @@
 
 #ifndef BUFSIZ
 #define BUFSIZ 4096
+static_assert(BUFSIZ > 0, "BUFSIZ must be greater than 0");
+static_assert(BUFSIZ % 8 == 0, "BUFSIZ must be a multiple of 8");
 #endif
 
 #define TAB_SEPARATOR "\t"
@@ -31,9 +33,11 @@ bool file_write_uint64_array(FILE *file, uint64_t *values, size_t n);
 bool file_read_float(FILE *file, float *value);
 bool file_write_float(FILE *file, float value);
 
+float file_deserialize_float(unsigned char *buf);
 bool file_read_float_array(FILE *file, float *value, size_t n);
 bool file_write_float_array(FILE *file, float *values, size_t n);
 
+double file_deserialize_double(unsigned char *buf);
 bool file_read_double(FILE *file, double *value);
 bool file_write_double(FILE *file, double value);
 

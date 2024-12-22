@@ -67,23 +67,37 @@ bool file_read_uint64(FILE *file, uint64_t *value) {
     return false;
 }
 
+
+#define file_read_array(file, type, value, n, func) \
+do { \
+    size_t type_size = sizeof(type); \
+    unsigned char *buf = (unsigned char *)malloc((n) * type_size); \
+    if (buf == NULL) return false; \
+    bool ret = false; \
+    size_t bytes_remaining = (size_t)(n) * type_size; \
+    size_t i = 0; \
+    while (bytes_remaining > 0) { \
+        size_t read_size = bytes_remaining > BUFSIZ ? BUFSIZ : bytes_remaining; \
+        size_t bytes_read = fread(buf, 1, read_size, file); \
+        if (bytes_read != read_size) { \
+            ret = false; \
+            break; \
+        } \
+        for (size_t j = 0, byte_offset = 0; j < read_size / type_size; i++, j++, byte_offset += type_size) { \
+            unsigned char *ptr = buf + byte_offset; \
+            value[i] = func(ptr); \
+        } \
+        bytes_remaining -= read_size; \
+        ret = bytes_remaining == 0; \
+    } \
+    free(buf); \
+    return ret; \
+} while (0)
+
+
+
 bool file_read_uint64_array(FILE *file, uint64_t *value, size_t n) {
-    unsigned char *buf = malloc(n * sizeof(uint64_t));
-
-    if (buf == NULL) return false;
-
-    bool ret = false;
-
-    if (fread(buf, sizeof(uint64_t), n, file) == n) {
-
-        for (size_t i = 0, byte_offset = 0; i < n; i++, byte_offset += sizeof(uint64_t)) {
-            unsigned char *ptr = buf + byte_offset;
-            value[i] = file_deserialize_uint64(ptr);
-        }
-        ret = true;
-    }
-    free(buf);
-    return ret;
+    file_read_array(file, uint64_t, value, n, file_deserialize_uint64);
 }
 
 static inline void fill_buffer_uint64(uint8_t *buf, size_t buf_index, uint64_t value) {
@@ -136,6 +150,13 @@ typedef union {
     double d;
 } uint64_double_t;
 
+
+inline double file_deserialize_double(unsigned char *buf) {
+    uint64_double_t ud;
+    ud.u = file_deserialize_uint64(buf);
+    return ud.d;
+}
+
 bool file_read_double(FILE *file, double *value) {
     uint64_double_t ud;
     if (!file_read_uint64(file, &ud.u)) {
@@ -146,24 +167,7 @@ bool file_read_double(FILE *file, double *value) {
 }
 
 bool file_read_double_array(FILE *file, double *value, size_t n) {
-    unsigned char *buf = malloc(n * sizeof(uint64_t));
-
-    if (buf == NULL) return false;
-
-    bool ret = false;
-
-    if (fread(buf, sizeof(uint64_t), n, file) == n) {
-        uint64_double_t ud;
-
-        for (size_t i = 0, byte_offset = 0; i < n; i++, byte_offset += sizeof(uint64_t)) {
-            unsigned char *ptr = buf + byte_offset;
-            ud.u = file_deserialize_uint64(ptr);
-            value[i] = ud.d;
-        }
-        ret = true;
-    }
-    free(buf);
-    return ret;
+    file_read_array(file, double, value, n, file_deserialize_double);
 }
 
 bool file_write_double(FILE *file, double value) {
@@ -205,6 +209,12 @@ typedef union {
     float f;
 } uint32_float_t;
 
+inline float file_deserialize_float(unsigned char *buf) {
+    uint32_float_t uf;
+    uf.u = file_deserialize_uint32(buf);
+    return uf.f;
+}
+
 bool file_read_float(FILE *file, float *value) {
     uint32_float_t uf;
 
@@ -216,24 +226,7 @@ bool file_read_float(FILE *file, float *value) {
 }
 
 bool file_read_float_array(FILE *file, float *value, size_t n) {
-    unsigned char *buf = malloc(n * sizeof(uint32_t));
-
-    if (buf == NULL) return false;
-
-    bool ret = false;
-
-    if (fread(buf, sizeof(uint32_t), n, file) == n) {
-        uint32_float_t uf;
-
-        for (size_t i = 0, byte_offset = 0; i < n; i++, byte_offset += sizeof(uint32_t)) {
-            unsigned char *ptr = buf + byte_offset;
-            uf.u = file_deserialize_uint32(ptr);
-            value[i] = uf.f;
-        }
-        ret = true;
-    }
-    free(buf);
-    return ret;
+    file_read_array(file, float, value, n, file_deserialize_float);
 }
 
 bool file_write_float(FILE *file, float value) {
@@ -267,22 +260,7 @@ bool file_read_uint32(FILE *file, uint32_t *value) {
 }
 
 bool file_read_uint32_array(FILE *file, uint32_t *value, size_t n) {
-    unsigned char *buf = malloc(n * sizeof(uint32_t));
-
-    if (buf == NULL) return false;
-
-    bool ret = false;
-
-    if (fread(buf, sizeof(uint32_t), n, file) == n) {
-
-        for (size_t i = 0, byte_offset = 0; i < n; i++, byte_offset += sizeof(uint32_t)) {
-            unsigned char *ptr = buf + byte_offset;
-            value[i] = file_deserialize_uint32(ptr);
-        }
-        ret = true;
-    }
-    free(buf);
-    return ret;
+    file_read_array(file, uint32_t, value, n, file_deserialize_uint32);
 }
 
 void fill_buffer_uint32(uint8_t *buf, size_t buf_index, uint32_t value) {

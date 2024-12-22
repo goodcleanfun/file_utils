@@ -134,6 +134,24 @@ TEST test_file_utils(void) {
     }
     free(read_la);
 
+    f = fopen(filename, "w");
+    uint64_t la_large[10000];
+    for (size_t i = 0; i < 9999; i++) {
+        la_large[i] = i;
+    }
+    la_large[9999] = ULLONG_MAX;
+    size_t len_la_large = sizeof(la_large) / sizeof(uint64_t);
+    ASSERT(file_write_uint64_array(f, la_large, len_la_large));
+    fclose(f);
+
+    f = fopen(filename, "r");
+    uint64_t *read_la_large = malloc(sizeof(uint64_t) * len_la_large);
+    ASSERT(file_read_uint64_array(f, read_la_large, len_la_large));
+    for (size_t i = 0; i < len_la_large; i++) {
+        ASSERT_EQ(read_la_large[i], la_large[i]);
+    }
+    free(read_la_large);
+
     int ret = remove(filename);
     ASSERT_EQ(ret, 0);
 

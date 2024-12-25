@@ -68,10 +68,11 @@ bool file_read_uint64(FILE *file, uint64_t *value) {
 }
 
 
-#define file_read_array(file, type, value, n, func) \
-do { \
+#define file_read_array_func(name, type, deserialize) \
+bool name(FILE *file, type *value, size_t n) { \
     size_t type_size = sizeof(type); \
-    unsigned char *buf = (unsigned char *)malloc((n) * type_size); \
+    size_t buf_size = BUFSIZ > ((n) *type_size) ? BUFSIZ : ((n) * type_size); \
+    unsigned char *buf = (unsigned char *)malloc(buf_size); \
     if (buf == NULL) return false; \
     bool ret = false; \
     size_t bytes_remaining = (size_t)(n) * type_size; \
@@ -85,20 +86,16 @@ do { \
         } \
         for (size_t j = 0, byte_offset = 0; j < read_size / type_size; i++, j++, byte_offset += type_size) { \
             unsigned char *ptr = buf + byte_offset; \
-            value[i] = func(ptr); \
+            value[i] = deserialize(ptr); \
         } \
         bytes_remaining -= read_size; \
         ret = bytes_remaining == 0; \
     } \
     free(buf); \
     return ret; \
-} while (0)
-
-
-
-bool file_read_uint64_array(FILE *file, uint64_t *value, size_t n) {
-    file_read_array(file, uint64_t, value, n, file_deserialize_uint64);
 }
+
+file_read_array_func(file_read_uint64_array, uint64_t, file_deserialize_uint64)
 
 static inline void fill_buffer_uint64(uint8_t *buf, size_t buf_index, uint64_t value) {
     buf[buf_index    ] = (uint8_t)(value >> 56);
@@ -166,9 +163,7 @@ bool file_read_double(FILE *file, double *value) {
     return true;
 }
 
-bool file_read_double_array(FILE *file, double *value, size_t n) {
-    file_read_array(file, double, value, n, file_deserialize_double);
-}
+file_read_array_func(file_read_double_array, double, file_deserialize_double)
 
 bool file_write_double(FILE *file, double value) {
     uint64_double_t ud;
@@ -225,9 +220,7 @@ bool file_read_float(FILE *file, float *value) {
     return true;
 }
 
-bool file_read_float_array(FILE *file, float *value, size_t n) {
-    file_read_array(file, float, value, n, file_deserialize_float);
-}
+file_read_array_func(file_read_float_array, float, file_deserialize_float)
 
 bool file_write_float(FILE *file, float value) {
     uint32_float_t uf;
@@ -259,9 +252,7 @@ bool file_read_uint32(FILE *file, uint32_t *value) {
     return false;
 }
 
-bool file_read_uint32_array(FILE *file, uint32_t *value, size_t n) {
-    file_read_array(file, uint32_t, value, n, file_deserialize_uint32);
-}
+file_read_array_func(file_read_uint32_array, uint32_t, file_deserialize_uint32)
 
 void fill_buffer_uint32(uint8_t *buf, size_t buf_index, uint32_t value) {
     buf[buf_index    ] = (uint8_t)(value >> 24);
@@ -329,6 +320,8 @@ bool file_write_uint16(FILE *file, uint16_t value) {
     fill_buffer_uint16(buf, 0, value);
     return (fwrite(buf, 2, 1, file) == 1);
 }
+
+file_read_array_func(file_read_uint16_array, uint16_t, file_deserialize_uint16)
 
 bool file_write_uint16_array(FILE *file, uint16_t *values, size_t n) {
     uint8_t buf[BUFSIZ];

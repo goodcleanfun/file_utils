@@ -140,6 +140,7 @@ TEST test_file_utils(void) {
         ASSERT_EQ(read_la_large[i], la_large[i]);
     }
     free(read_la_large);
+    fclose(f);
 
     int ret = remove(filename);
     ASSERT_EQ(ret, 0);

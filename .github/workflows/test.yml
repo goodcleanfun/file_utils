@@ -96,7 +96,7 @@ jobs:
           mkdir -p deps/byte_order
           curl -L https://raw.githubusercontent.com/goodcleanfun/byte_order/refs/heads/main/src/byte_order.h -o deps/byte_order/byte_order.h
           mkdir -p deps/likely
-          curl -L https://raw.githubusercontent.com/goodcleanfun/likely/refs/heads/main/src/likely.h -o deps/byte_order/likely.h
+          curl -L https://raw.githubusercontent.com/goodcleanfun/likely/refs/heads/main/src/likely.h -o deps/likely/likely.h
       - name: Build and Test with MinGW
         run: |
           make CC=gcc CFLAGS="-std=c11" test

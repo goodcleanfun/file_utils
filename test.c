@@ -7,146 +7,135 @@
 
 TEST test_file_utils(void) {
     char *filename = "test_file_utils.txt";
-    FILE *f = fopen(filename, "w");
-    size_t size = BUFSIZ * 2;
-    char long_line[size + 1];
-    long_line[size] = '\0';
-    for (int i = 0; i < size - 2; i++) {
-        long_line[i] = 'a';     
-    }
-    long_line[size - 1] = '\n';
-    long_line[size - 2] = '\r';
+    FILE *f = fopen(filename, "wb");
 
-    size_t len_long_line = size - 2;
-    size_t written = fwrite(long_line, 1, size, f);
-
-    ASSERT_EQ(written, size);
-
-    char *short_string = "foobar";
-    size_t len_short_string = strlen(short_string);
-    ASSERT(file_write_chars(f, short_string, len_short_string));
-    ASSERT(file_write_chars(f, "\n", 1));
-    ASSERT_EQ(fwrite("\n", 1, 1, f), 1);
-    ASSERT_EQ(fwrite("\n", 1, 1, f), 1);
-
-    fclose(f);
-    f = fopen(filename, "r");
-
-    char *read_line = file_getline(f);
-    ASSERT_NEQ(read_line, NULL);
-    ASSERT_EQ(strncmp(read_line, long_line, len_long_line), 0);
-    free(read_line);
-
-    read_line = file_getline(f);
-    ASSERT_NEQ(read_line, NULL);
-    ASSERT_EQ(strncmp(read_line, short_string, len_short_string), 0);
-    free(read_line);
-
-    read_line = file_getline(f);
-    ASSERT_NEQ(read_line, NULL);
-    ASSERT_EQ(strlen(read_line), 0);
-    free(read_line);
-
-    fclose(f);
-    f = fopen(filename, "w");
+    file_writer_t writer = file_writer_init(f);
 
     uint64_t written_uint64 = ULLONG_MAX;
-    ASSERT(file_write_uint64(f, written_uint64));
+    ASSERT(file_writer_write_uint64(&writer, written_uint64));
 
+    file_writer_flush(&writer);
     fclose(f);
-    f = fopen(filename, "r");
+
+    f = fopen(filename, "rb");
+
+    file_reader_t reader = file_reader_init(f);
 
     uint64_t read_uint64;
-    ASSERT(file_read_uint64(f, &read_uint64));
+    ASSERT(file_reader_read_uint64(&reader, &read_uint64));
     ASSERT_EQ(read_uint64, written_uint64);
 
     fclose(f);
 
-    f = fopen(filename, "w");
+    f = fopen(filename, "wb");
+
+    writer = file_writer_init(f);
 
     double written_double = DBL_MAX;
 
-    ASSERT(file_write_double(f, written_double));
+    ASSERT(file_writer_write_double(&writer, written_double));
 
+    file_writer_flush(&writer);
     fclose(f);
-    f = fopen(filename, "r");
+
+    f = fopen(filename, "rb");
+
+    reader = file_reader_init(f);
 
     double read_double;
-    ASSERT(file_read_double(f, &read_double));
+    ASSERT(file_reader_read_double(&reader, &read_double));
     ASSERT_EQ(read_double, written_double);
 
-    f = fopen(filename, "w");
-    double da[] = {1.0, 2.0, 3.0, 4.0, 5.0, DBL_MAX};
-    size_t len_da = sizeof(da) / sizeof(double);
-    ASSERT(file_write_double_array(f, da, len_da));
     fclose(f);
 
-    f = fopen(filename, "r");
+    f = fopen(filename, "wb");
+    writer = file_writer_init(f);
+    double da[] = {1.0, 2.0, 3.0, 4.0, 5.0, DBL_MAX};
+    size_t len_da = sizeof(da) / sizeof(double);
+    ASSERT(file_writer_write_double_array(&writer, da, len_da));
+    file_writer_flush(&writer);
+    fclose(f);
+
+    f = fopen(filename, "rb");
+    reader = file_reader_init(f);
     double *read_da = malloc(sizeof(double) * len_da);
-    ASSERT(file_read_double_array(f, read_da, len_da));
+    ASSERT(file_reader_read_double_array(&reader, read_da, len_da));
     for (size_t i = 0; i < len_da; i++) {
         ASSERT_EQ(read_da[i], da[i]);
     }
     free(read_da);
     fclose(f);
 
-    f = fopen(filename, "w");
+    f = fopen(filename, "wb");
+    writer = file_writer_init(f);
     float fa[] = {1.0, 2.0, 3.0, 4.0, 5.0, FLT_MAX};
     size_t len_fa = sizeof(fa) / sizeof(float);
-    ASSERT(file_write_float_array(f, fa, len_fa));
+    ASSERT(file_writer_write_float_array(&writer, fa, len_fa));
+    file_writer_flush(&writer);
     fclose(f);
 
-    f = fopen(filename, "r");
+    f = fopen(filename, "rb");
+    reader = file_reader_init(f);
     float *read_fa = malloc(sizeof(float) * len_fa);
-    ASSERT(file_read_float_array(f, read_fa, len_fa));
+    ASSERT(file_reader_read_float_array(&reader, read_fa, len_fa));
     for (size_t i = 0; i < len_fa; i++) {
         ASSERT_EQ(read_fa[i], fa[i]);
     }
     free(read_fa);
     fclose(f);
 
-    f = fopen(filename, "w");
+    f = fopen(filename, "wb");
+    writer = file_writer_init(f);
     uint32_t ia[] = {1, 2, 3, 4, 5, INT_MAX};
     size_t len_ia = sizeof(ia) / sizeof(int32_t);
-    ASSERT(file_write_uint32_array(f, ia, len_ia));
+    ASSERT(file_writer_write_uint32_array(&writer, ia, len_ia));
+    file_writer_flush(&writer);
     fclose(f);
 
-    f = fopen(filename, "r");
+    f = fopen(filename, "rb");
+    reader = file_reader_init(f);
     uint32_t *read_ia = malloc(sizeof(uint32_t) * len_ia);
-    ASSERT(file_read_uint32_array(f, read_ia, len_ia));
+    ASSERT(file_reader_read_uint32_array(&reader, read_ia, len_ia));
     for (size_t i = 0; i < len_ia; i++) {
         ASSERT_EQ(read_ia[i], ia[i]);
     }
     free(read_ia);
     fclose(f);
 
-    f = fopen(filename, "w");
+    f = fopen(filename, "wb");
+    writer = file_writer_init(f);
     uint64_t la[] = {1, 2, 3, 4, 5, ULLONG_MAX};
     size_t len_la = sizeof(la) / sizeof(uint64_t);
-    ASSERT(file_write_uint64_array(f, la, len_la));
+    ASSERT(file_writer_write_uint64_array(&writer, la, len_la));
+    file_writer_flush(&writer);
     fclose(f);
 
-    f = fopen(filename, "r");
+    f = fopen(filename, "rb");
+    reader = file_reader_init(f);
     uint64_t *read_la = malloc(sizeof(uint64_t) * len_la);
-    ASSERT(file_read_uint64_array(f, read_la, len_la));
+    ASSERT(file_reader_read_uint64_array(&reader, read_la, len_la));
     for (size_t i = 0; i < len_la; i++) {
         ASSERT_EQ(read_la[i], la[i]);
     }
     free(read_la);
+    fclose(f);
 
-    f = fopen(filename, "w");
+    f = fopen(filename, "wb");
     uint64_t la_large[10000];
     for (size_t i = 0; i < 9999; i++) {
         la_large[i] = i;
     }
     la_large[9999] = ULLONG_MAX;
     size_t len_la_large = sizeof(la_large) / sizeof(uint64_t);
-    ASSERT(file_write_uint64_array(f, la_large, len_la_large));
+    writer = file_writer_init(f);
+    ASSERT(file_writer_write_uint64_array(&writer, la_large, len_la_large));
+    file_writer_flush(&writer);
     fclose(f);
 
-    f = fopen(filename, "r");
+    f = fopen(filename, "rb");
+    reader = file_reader_init(f);
     uint64_t *read_la_large = malloc(sizeof(uint64_t) * len_la_large);
-    ASSERT(file_read_uint64_array(f, read_la_large, len_la_large));
+    ASSERT(file_reader_read_uint64_array(&reader, read_la_large, len_la_large));
     for (size_t i = 0; i < len_la_large; i++) {
         ASSERT_EQ(read_la_large[i], la_large[i]);
     }

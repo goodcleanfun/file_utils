@@ -8,5 +8,9 @@
   "development": {
     "silentbicycle/greatest": "*"
   },
-  "src": ["src/file_utils.h", "src/file_utils.c"]
+  "dependencies": {
+    "goodcleanfun/byte_order": "*",
+    "goodcleanfun/likely": "*"
+  },
+  "src": ["src/file_utils.h"]
 }
